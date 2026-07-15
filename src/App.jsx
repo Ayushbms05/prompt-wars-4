@@ -11,7 +11,7 @@
  * Applies accessibility-mode class to root when toggled.
  */
 
-import React, { useState, Suspense } from "react";
+import React, { useState, useCallback, Suspense } from "react";
 import { AppProvider, useAppContext } from "./context/AppContext.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import Header from "./components/Header.jsx";
@@ -28,6 +28,16 @@ const OrganizerDashboard = React.lazy(() => import("./components/OrganizerDashbo
 function AppContent() {
   const [activeTab, setActiveTab] = useState("navigate");
   const { accessibilityMode } = useAppContext();
+
+  /**
+   * Stable callback reference for tab changes.
+   * Wrapped in useCallback with no dependencies because setActiveTab is already
+   * a stable reference from useState — this ensures Header (React.memo) skips
+   * re-renders when unrelated state like accessibilityMode changes.
+   */
+  const handleTabChange = useCallback((tab) => {
+    setActiveTab(tab);
+  }, []);
 
   /**
    * Renders the currently active tab's content.
@@ -48,7 +58,7 @@ function AppContent() {
 
   return (
     <div className={`app ${accessibilityMode ? "accessibility-mode" : ""}`}>
-      <Header activeTab={activeTab} onTabChange={setActiveTab} />
+      <Header activeTab={activeTab} onTabChange={handleTabChange} />
 
       <main className="app-main">
         <div className="main-content">

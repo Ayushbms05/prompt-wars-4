@@ -12,7 +12,7 @@
  * - Status badges for incident tracking
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useAppContext } from "../context/AppContext.jsx";
 import { generateIncidentSummary } from "../services/incidentService.js";
 import { mockIncidents, addMockIncident } from "../data/mockIncidents.js";
@@ -129,7 +129,7 @@ export default function OrganizerDashboard() {
           aria-busy={isLoading}
           style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", padding: "0.5rem 1rem", borderRadius: "8px", color: "white", cursor: "pointer" }}
         >
-          🔄 Refresh Incidents
+          {isLoading ? <span className="btn-spinner"></span> : "🔄"} Refresh Incidents
           {isLoading && <span className="sr-only">Loading...</span>}
         </button>
       </div>
@@ -216,6 +216,8 @@ export default function OrganizerDashboard() {
           <div className="summary-result-content">
             {typeof summaryText === 'string' ? (
               <p>{summaryText}</p>
+            ) : summaryText.summary?.startsWith("[Error]") ? (
+              <p style={{ color: "var(--accent-red)", background: "rgba(220, 53, 69, 0.1)", padding: "1rem", borderRadius: "8px", border: "1px solid rgba(220, 53, 69, 0.25)" }}>{summaryText.summary}</p>
             ) : (
               <>
                 <div style={{ marginBottom: "1rem" }}>

@@ -56,7 +56,7 @@ export default function TransportCard() {
           className="btn btn-primary transport-btn"
           disabled={isLoading || !isAIConfigured()}
         >
-          {isLoading ? "⏳" : "Get Tips"}
+          {isLoading ? <span className="btn-spinner"></span> : "Get Tips"}
         </button>
       </div>
       {tips && (

@@ -1,9 +1,17 @@
 /**
  * crowdAlertService.js
- * 
- * Builds prompts for the crowd congestion alert generator.
- * Takes zone-occupancy data and asks Gemini to produce a plain-language
- * congestion warning with alternate route suggestions.
+ *
+ * @module crowdAlertService
+ *
+ * Builds prompts for the crowd congestion alert generator and delegates
+ * execution to {@link module:geminiClient.generateText}.
+ *
+ * Prompt pattern: data-to-narrative generation.
+ * Live zone-occupancy numbers (zone name, current count, capacity, trend)
+ * are formatted as a structured list and injected alongside the stadium map.
+ * Gemini is asked to identify critical zones (>80 % capacity), propose
+ * alternate routes, and produce a concise plain-language alert suitable for
+ * PA announcements or volunteer radio calls.
  */
 
 import { generateText } from "./geminiClient.js";

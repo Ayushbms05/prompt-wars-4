@@ -10,6 +10,15 @@
  * - Quick-action suggestion chips for common destinations
  * - Loading skeleton while waiting for AI response
  * - Full error handling for API failures
+ * 
+ * Architecture note — TransportCard co-location:
+ * TransportCard (departure/transport suggestions) is rendered here rather than
+ * as a separate top-level tab because users overwhelmingly ask wayfinding
+ * questions immediately before needing transport info (e.g. "How do I get to
+ * Gate B?" naturally leads to "Which bus leaves from Gate B?"). Co-locating
+ * both features in a single screen reduces navigation friction and keeps the
+ * related context visible. A future refactor could promote it to a shared
+ * layout slot without changing this component's core chat logic.
  */
 
 import { useState, useRef, useEffect } from "react";
@@ -81,7 +90,12 @@ export default function NavigationChat() {
        */
       const aiResponse = await getDirections(trimmedQuery, language, accessibilityMode, abortController.current.signal);
 
-      const aiMessage = { role: "assistant", content: aiResponse, timestamp: new Date() };
+      const aiMessage = { 
+        role: "assistant", 
+        content: aiResponse, 
+        timestamp: new Date(),
+        isError: typeof aiResponse === 'string' && aiResponse.startsWith("[Error]")
+      };
       setMessages(prev => [...prev, aiMessage]);
     } catch (unexpectedError) {
       if (unexpectedError.name === 'AbortError') return;
@@ -197,7 +211,7 @@ export default function NavigationChat() {
           disabled={isLoading || !inputValue.trim()}
           aria-label="Send message"
         >
-          {isLoading ? "⏳" : "➤"}
+          {isLoading ? <span className="btn-spinner" style={{ margin: 0 }}></span> : "➤"}
         </button>
       </div>
     </div>

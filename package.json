@@ -1,7 +1,8 @@
 {
   "name": "fanmate-2026",
+  "version": "1.0.0",
+  "description": "A GenAI-powered web app for FIFA World Cup 2026 fans, volunteers, and organizers.",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

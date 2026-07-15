@@ -1,9 +1,17 @@
 /**
  * incidentService.js
- * 
- * Builds prompts for the organizer dashboard's incident summarizer.
- * Takes incident log entries and asks Gemini to produce a prioritized
- * summary with staffing recommendations.
+ *
+ * @module incidentService
+ *
+ * Builds prompts for the Organizer Dashboard's incident summarizer and delegates
+ * execution to {@link module:geminiClient.generateText}.
+ *
+ * Prompt pattern: structured JSON extraction.
+ * All open incident records are serialised into a numbered log and Gemini is
+ * instructed to respond with a strict JSON object containing:
+ *   { summary, staffing_recommendation, urgent_flag }
+ * The caller parses this JSON to render each field in its own UI card.
+ * Markdown code fences emitted by the model are stripped before parsing.
  */
 
 import { generateText } from "./geminiClient.js";

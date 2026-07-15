@@ -1,10 +1,20 @@
 /**
  * navigationService.js
- * 
- * Builds prompts for the stadium navigation chatbot.
- * Injects the full stadium map JSON into the prompt so Gemini can
- * give accurate, context-aware directions between any two locations.
- * 
+ *
+ * @module navigationService
+ *
+ * Builds prompts for the stadium navigation chatbot and delegates
+ * execution to {@link module:geminiClient.generateText}.
+ *
+ * Prompt pattern: grounded generation with static context injection.
+ * The full stadium map JSON is embedded in every prompt so Gemini can
+ * reason about real zone names, walking paths, facilities, and distances
+ * without hallucinating layout details.
+ *
+ * User input is wrapped in explicit ---USER QUERY START/END--- delimiters
+ * and the model is instructed to treat that block as data, not instructions,
+ * mitigating prompt-injection attacks.
+ *
  * Supports multilingual output and accessibility-simplified language.
  */
 

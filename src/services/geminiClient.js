@@ -1,13 +1,23 @@
 /**
  * geminiClient.js
- * 
+ *
+ * @module geminiClient
+ *
  * Central AI client that wraps the Google Gemini API.
- * All AI calls across the app flow through generateText() which provides:
- *  - Input validation (rejects empty/too-long prompts)
- *  - Timeout handling (aborts after 30 seconds)
- *  - Error catching (never throws — always returns an error message string)
- * 
- * Model: gemini-3-flash (fast, cost-effective, strong multilingual support)
+ * All AI calls across the app flow through {@link generateText}, which provides:
+ *  - Input validation (rejects empty / too-long prompts)
+ *  - Response caching (Map-based, FIFO-evicted, max 50 entries) so identical
+ *    prompts within a session are served instantly without a network round-trip
+ *  - Timeout handling (AbortController race, 30 s default)
+ *  - Automatic retry on 503 UNAVAILABLE (up to 2 times) and 429 TOO_MANY_REQUESTS
+ *    (exponential back-off)
+ *  - Error normalisation — never throws; always returns a user-facing string
+ *
+ * Prompt pattern used: single-turn, unstructured text generation via
+ * `model.generateContent({ contents })`. The caller builds the full prompt
+ * string (system context + data + user query) and passes it as one message.
+ *
+ * Model: gemini-3.5-flash (fast, cost-effective, strong multilingual support)
  * API key: read from VITE_GEMINI_API_KEY environment variable
  */
 
