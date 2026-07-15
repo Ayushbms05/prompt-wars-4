@@ -8,10 +8,13 @@
  * - Tab navigation
  */
 
-import { useAppContext, SUPPORTED_LANGUAGES } from "../context/AppContext.jsx";
+import React from "react";
+import PropTypes from "prop-types";
+import { useAppContext } from "../context/AppContext.jsx";
+import { SUPPORTED_LANGUAGES } from "../constants/index.js";
 import "./Header.css";
 
-export default function Header({ activeTab, onTabChange }) {
+const Header = React.memo(function Header({ activeTab, onTabChange }) {
   const { language, setLanguage, accessibilityMode, toggleAccessibility } = useAppContext();
 
   return (
@@ -94,4 +97,11 @@ export default function Header({ activeTab, onTabChange }) {
       </nav>
     </header>
   );
-}
+});
+
+Header.propTypes = {
+  activeTab: PropTypes.string.isRequired,
+  onTabChange: PropTypes.func.isRequired,
+};
+
+export default Header;

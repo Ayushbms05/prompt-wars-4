@@ -131,6 +131,20 @@ Every AI call is wrapped with:
 
 ---
 
+## 🎯 Problem Statement Alignment Mapping
+
+To ensure unambiguous alignment with the problem statement, here is how each required capability maps to the implementation:
+
+- **Navigation**: `src/services/navigationService.js` (Turn-by-turn stadium directions with map context).
+- **Crowd Management**: `src/services/crowdAlertService.js` and `CrowdAlert.jsx` (Zone occupancy monitoring and congestion alerts).
+- **Accessibility**: `src/context/AppContext.jsx` (Global mode for simplified 6th-grade level text and visual enlargement).
+- **Transportation & Sustainability**: `src/services/transportService.js` and `TransportCard.jsx` (Gate-specific transit advice and eco-tips).
+- **Multilingual Support**: `src/context/AppContext.jsx` and UI selectors (Dynamic switching of AI prompts across 7 languages).
+- **Operational Intelligence**: `src/services/incidentService.js` (Synthesizing raw log data into structured intelligence).
+- **Real-time Decision Support**: `src/components/OrganizerDashboard.jsx` (Refreshable dynamic incident queue generating immediate staffing actions based on current reality).
+
+---
+
 ## 🧪 Testing
 
 Tests use **Vitest** + **React Testing Library** with mocked AI calls.

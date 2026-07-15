@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useAppContext } from "../context/AppContext.jsx";
 import { getTransportTips } from "../services/transportService.js";
 import { isAIConfigured } from "../services/geminiClient.js";
@@ -11,16 +11,26 @@ export default function TransportCard() {
   const [selectedGate, setSelectedGate] = useState(GATES[0]);
   const [tips, setTips] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const abortController = React.useRef(null);
+
+  React.useEffect(() => {
+    return () => {
+      if (abortController.current) {
+        abortController.current.abort();
+      }
+    };
+  }, []);
 
   const handleGetTips = async () => {
     if (isLoading || !isAIConfigured()) return;
     setIsLoading(true);
+    abortController.current = new AbortController();
     try {
-      const response = await getTransportTips(selectedGate, language, accessibilityMode);
+      const response = await getTransportTips(selectedGate, language, accessibilityMode, abortController.current.signal);
       setTips(response);
     } catch (error) {
-      console.error("[TransportCard] Error:", error);
-      setTips("⚠️ Failed to load tips.");
+      if (error.name === 'AbortError') return;
+      setTips("[Error] Failed to load tips.");
     } finally {
       setIsLoading(false);
     }

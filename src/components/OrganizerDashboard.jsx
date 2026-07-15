@@ -12,10 +12,10 @@
  * - Status badges for incident tracking
  */
 
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAppContext } from "../context/AppContext.jsx";
 import { generateIncidentSummary } from "../services/incidentService.js";
-import { mockIncidents } from "../data/mockIncidents.js";
+import { mockIncidents, addMockIncident } from "../data/mockIncidents.js";
 import { isAIConfigured } from "../services/geminiClient.js";
 import "./OrganizerDashboard.css";
 
@@ -50,6 +50,16 @@ export default function OrganizerDashboard() {
   const [summaryText, setSummaryText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [lastGenerated, setLastGenerated] = useState(null);
+  const [incidents, setIncidents] = useState([...mockIncidents]);
+  const abortController = React.useRef(null);
+
+  React.useEffect(() => {
+    return () => {
+      if (abortController.current) {
+        abortController.current.abort();
+      }
+    };
+  }, []);
 
   /**
    * Triggers the AI incident summary generation.
@@ -59,6 +69,7 @@ export default function OrganizerDashboard() {
     if (isLoading) return;
     setIsLoading(true);
     setSummaryText("");
+    abortController.current = new AbortController();
 
     try {
       /**
@@ -66,20 +77,26 @@ export default function OrganizerDashboard() {
        * The service builds a prompt with all incident data, asking Gemini to
        * rank by urgency, recommend staffing changes, and suggest immediate actions.
        */
-      const result = await generateIncidentSummary(language, accessibilityMode);
+      const result = await generateIncidentSummary(language, accessibilityMode, abortController.current.signal);
       setSummaryText(result);
       setLastGenerated(new Date());
     } catch (unexpectedError) {
-      console.error("[OrganizerDashboard] Unexpected error:", unexpectedError);
-      setSummaryText("⚠️ Failed to generate incident summary. Please try again.");
+      if (unexpectedError.name === 'AbortError') return;
+      setSummaryText("[Error] Failed to generate incident summary. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleRefreshIncidents = () => {
+    addMockIncident();
+    setIncidents([...mockIncidents]); // Trigger re-render with new array
+    handleGenerateSummary(); // Generate new brief based on updated data
+  };
+
   // Stats for the header
-  const openCount = mockIncidents.filter(i => i.status === "open").length;
-  const criticalCount = mockIncidents.filter(i => i.severity === "critical" || i.severity === "high").length;
+  const openCount = incidents.filter(i => i.status === "open").length;
+  const criticalCount = incidents.filter(i => i.severity === "critical" || i.severity === "high").length;
 
   return (
     <div className="organizer-dashboard">
@@ -98,10 +115,23 @@ export default function OrganizerDashboard() {
             <span className="stat-label">High/Critical</span>
           </div>
           <div className="stat-pill stat-total">
-            <span className="stat-number">{mockIncidents.length}</span>
+            <span className="stat-number">{incidents.length}</span>
             <span className="stat-label">Total</span>
           </div>
         </div>
+      </div>
+
+      <div className="dashboard-actions-bar" style={{ display: "flex", justifyContent: "flex-end", padding: "0 2rem", marginBottom: "1rem" }}>
+        <button 
+          className="btn" 
+          onClick={handleRefreshIncidents}
+          disabled={isLoading}
+          aria-busy={isLoading}
+          style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", padding: "0.5rem 1rem", borderRadius: "8px", color: "white", cursor: "pointer" }}
+        >
+          🔄 Refresh Incidents
+          {isLoading && <span className="sr-only">Loading...</span>}
+        </button>
       </div>
 
       {/* API key warning */}
@@ -126,7 +156,7 @@ export default function OrganizerDashboard() {
             </tr>
           </thead>
           <tbody>
-            {mockIncidents.map((incident) => {
+            {incidents.map((incident) => {
               const statusBadge = getStatusBadge(incident.status);
               return (
                 <tr key={incident.id} className={getSeverityClass(incident.severity)}>

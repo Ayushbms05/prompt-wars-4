@@ -111,7 +111,7 @@ describe("OrganizerDashboard", () => {
     await userEvent.click(screen.getByText("🤖 Generate AI Operations Brief"));
 
     await waitFor(() => {
-      expect(screen.getByText("⚠️ Failed to generate incident summary. Please try again.")).toBeInTheDocument();
+      expect(screen.getByText(/Failed to generate incident summary/)).toBeInTheDocument();
     });
   });
 

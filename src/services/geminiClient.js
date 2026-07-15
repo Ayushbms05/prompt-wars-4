@@ -12,6 +12,7 @@
  */
 
 import { GoogleGenAI } from "@google/genai";
+import { HTTP_STATUS, ERROR_MESSAGES, RETRY_CONFIG } from "../constants/index.js";
 
 // --- Configuration ---
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
@@ -31,6 +32,9 @@ if (API_KEY && API_KEY !== "your_gemini_api_key_here") {
   );
 }
 
+// --- Cache ---
+const responseCache = new Map();
+
 /**
  * Sends a prompt to the Gemini API and returns the generated text.
  * 
@@ -39,40 +43,57 @@ if (API_KEY && API_KEY !== "your_gemini_api_key_here") {
  * the calling component never has to worry about crashes.
  * 
  * @param {string} prompt - The full prompt to send to Gemini
+ * @param {AbortSignal} [signal] - Optional external abort signal
  * @returns {Promise<string>} The generated text, or an error message string
  */
-export async function generateText(prompt) {
+export async function generateText(prompt, signal) {
   // --- Input validation ---
   if (!prompt || typeof prompt !== "string" || prompt.trim().length === 0) {
-    return "⚠️ Please provide a valid question or input.";
+    return ERROR_MESSAGES.EMPTY_PROMPT;
   }
 
   if (prompt.length > MAX_PROMPT_LENGTH) {
-    return "⚠️ Your input is too long. Please shorten your message and try again.";
+    return ERROR_MESSAGES.PROMPT_TOO_LONG;
+  }
+
+  // --- Check Cache ---
+  const cacheKey = prompt.trim();
+  if (responseCache.has(cacheKey)) {
+    return responseCache.get(cacheKey);
   }
 
   // --- Check API key availability ---
   if (!aiClient) {
-    return "🔑 AI features require a Gemini API key. Please set VITE_GEMINI_API_KEY in your .env file and restart the app.";
+    return ERROR_MESSAGES.NO_API_KEY;
   }
 
   let attempt = 0;
-  const maxRetries = 2; // For 429 Rate Limiting
   let unavailableRetries = 0;
-  const maxUnavailableRetries = 3; // For 503 Unavailable
 
   try {
     while (true) {
-      console.log(`[FanMate] Gemini API called. Attempt (429: ${attempt + 1}/${maxRetries + 1}, 503: ${unavailableRetries + 1}/${maxUnavailableRetries + 1})`);
-      try {
-        // Create an AbortController for timeout handling
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+      console.log(`[FanMate] Gemini API called. Attempt (429: ${attempt + 1}/${RETRY_CONFIG.MAX_RETRIES + 1}, 503: ${unavailableRetries + 1}/${RETRY_CONFIG.MAX_UNAVAILABLE_RETRIES + 1})`);
+      
+      // Create an AbortController for timeout handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
+      // Link external signal if provided
+      const abortHandler = () => controller.abort();
+      if (signal) {
+        if (signal.aborted) {
+           clearTimeout(timeoutId);
+           throw new DOMException("Aborted", "AbortError");
+        }
+        signal.addEventListener("abort", abortHandler);
+      }
+
+      try {
         /**
          * AI CALL: Send the prompt to Gemini 3 Flash.
+         * We wrap the SDK call in a Promise.race to enforce our timeout and abort signal.
          */
-        const response = await aiClient.models.generateContent({
+        const apiCall = aiClient.models.generateContent({
           model: MODEL_NAME,
           contents: prompt,
           config: {
@@ -81,51 +102,77 @@ export async function generateText(prompt) {
           },
         });
 
+        const abortPromise = new Promise((_, reject) => {
+          controller.signal.addEventListener("abort", () => {
+            reject(new DOMException("Aborted", "AbortError"));
+          });
+        });
+
+        const response = await Promise.race([apiCall, abortPromise]);
+
         clearTimeout(timeoutId);
+        if (signal) {
+          signal.removeEventListener("abort", abortHandler);
+        }
 
         // Extract text from the response
         const text = response?.text;
 
         if (!text || text.trim().length === 0) {
-          return "⚠️ The AI returned an empty response. Please try again.";
+          return ERROR_MESSAGES.EMPTY_RESPONSE;
         }
-
+        
+        // Cache and return
+        if (responseCache.size >= 50) {
+          const firstKey = responseCache.keys().next().value;
+          responseCache.delete(firstKey);
+        }
+        responseCache.set(cacheKey, text);
         return text;
       } catch (error) {
+        clearTimeout(timeoutId);
+        if (signal) {
+          signal.removeEventListener("abort", abortHandler);
+        }
+
         // --- Error handling with explicit logging ---
         console.error(`[FanMate] Gemini API error (Model: ${MODEL_NAME}, Status: ${error.status || 'unknown'}, Attempt: ${attempt + unavailableRetries + 1}):`, error);
 
         if (error.name === "AbortError") {
-          return "⏱️ The request timed out. The AI service might be busy — please try again in a moment.";
+          // If aborted by the user/component unmount
+          if (signal && signal.aborted) {
+            throw error; // Let the component handle it (or ignore it)
+          }
+          return ERROR_MESSAGES.TIMEOUT;
         }
 
         // Retry on 503 UNAVAILABLE
-        if (error.status === 503) {
-          if (unavailableRetries < maxUnavailableRetries) {
+        if (error.status === HTTP_STATUS.UNAVAILABLE) {
+          if (unavailableRetries < RETRY_CONFIG.MAX_UNAVAILABLE_RETRIES) {
             unavailableRetries++;
             showRetryToast("Model is busy, retrying...");
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise(resolve => setTimeout(resolve, RETRY_CONFIG.UNAVAILABLE_DELAY_MS));
             continue; // Retry loop
           }
-          return "⚠️ The AI service is currently unavailable. Please try again in a few moments.";
+          return ERROR_MESSAGES.UNAVAILABLE;
         }
 
-        if (error.status === 429) {
-          if (attempt < maxRetries) {
+        if (error.status === HTTP_STATUS.TOO_MANY_REQUESTS) {
+          if (attempt < RETRY_CONFIG.MAX_RETRIES) {
             attempt++;
             const delay = 1000 * Math.pow(2, attempt - 1);
             console.warn(`[FanMate] Rate limited (429). Retrying in ${delay}ms...`);
             await new Promise(resolve => setTimeout(resolve, delay));
             continue; // Retry loop
           }
-          return "🚦 Too many requests. Please wait a moment and try again.";
+          return ERROR_MESSAGES.RATE_LIMITED;
         }
 
-        if (error.status === 401 || error.status === 403) {
-          return "🔑 Invalid API key. Please check your VITE_GEMINI_API_KEY in the .env file.";
+        if (error.status === HTTP_STATUS.UNAUTHORIZED || error.status === HTTP_STATUS.FORBIDDEN) {
+          return ERROR_MESSAGES.INVALID_KEY;
         }
 
-        return `⚠️ Something went wrong while contacting the AI service. Please try again. (${error.message || "Unknown error"})`;
+        return ERROR_MESSAGES.GENERIC_ERROR;
       }
     }
   } finally {

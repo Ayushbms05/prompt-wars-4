@@ -60,6 +60,26 @@ export const mockIncidents = [
   },
 ];
 
+let nextId = 6;
+export function addMockIncident() {
+  const severities = ["low", "medium", "high", "critical"];
+  const types = ["medical", "security", "facility", "crowd-control"];
+  const zones = ["Gate B (East)", "West Concourse", "Upper Deck Seating", "Food Court North"];
+  
+  const newIncident = {
+    id: `INC-00${nextId++}`,
+    timestamp: new Date().toISOString(),
+    severity: severities[Math.floor(Math.random() * severities.length)],
+    type: types[Math.floor(Math.random() * types.length)],
+    description: "New real-time automated incident report logged via sensor network.",
+    zone: zones[Math.floor(Math.random() * zones.length)],
+    status: "open",
+    assignedTeam: null,
+  };
+  mockIncidents.unshift(newIncident); // Add to top
+  return newIncident;
+}
+
 /**
  * Returns a formatted string of incident data for use in AI prompts.
  */

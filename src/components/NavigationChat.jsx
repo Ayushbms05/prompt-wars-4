@@ -37,6 +37,16 @@ export default function NavigationChat() {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const isRequestInFlight = useRef(false);
+  const abortController = useRef(null);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (abortController.current) {
+        abortController.current.abort();
+      }
+    };
+  }, []);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -56,6 +66,7 @@ export default function NavigationChat() {
 
     isRequestInFlight.current = true;
     setIsLoading(true);
+    abortController.current = new AbortController();
 
     // Add user message to chat
     const userMessage = { role: "user", content: trimmedQuery, timestamp: new Date() };
@@ -68,16 +79,16 @@ export default function NavigationChat() {
        * Passes the user's query along with current language and accessibility settings.
        * The service handles prompt construction and error wrapping.
        */
-      const aiResponse = await getDirections(trimmedQuery, language, accessibilityMode);
+      const aiResponse = await getDirections(trimmedQuery, language, accessibilityMode, abortController.current.signal);
 
       const aiMessage = { role: "assistant", content: aiResponse, timestamp: new Date() };
       setMessages(prev => [...prev, aiMessage]);
     } catch (unexpectedError) {
+      if (unexpectedError.name === 'AbortError') return;
       // Safety net — the service should never throw, but just in case
-      console.error("[NavigationChat] Unexpected error:", unexpectedError);
       const errorMessage = {
         role: "assistant",
-        content: "⚠️ An unexpected error occurred. Please try again.",
+        content: "[Error] An unexpected error occurred. Please try again.",
         timestamp: new Date(),
         isError: true,
       };
@@ -132,7 +143,7 @@ export default function NavigationChat() {
       )}
 
       {/* Chat messages */}
-      <div className="chat-messages" role="log" aria-label="Chat messages">
+      <div className="chat-messages" role="log" aria-label="Chat messages" aria-live="polite">
         {messages.map((msg, i) => (
           <div
             key={i}
@@ -156,7 +167,8 @@ export default function NavigationChat() {
             <div className="chat-bubble-avatar">🤖</div>
             <div className="chat-bubble-content">
               <div className="typing-indicator">
-                <span></span><span></span><span></span>
+                <span className="sr-only">AI is responding...</span>
+                <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
               </div>
             </div>
           </div>

@@ -5,19 +5,11 @@
  * Provides language and accessibility settings to all components
  * so every AI call can include the correct language/accessibility flags.
  */
+/* eslint-disable react/only-export-components */
 
 import { createContext, useContext, useState, useCallback } from "react";
 
-// Supported languages for the multilingual toggle
-export const SUPPORTED_LANGUAGES = [
-  { code: "en", label: "English", nativeLabel: "English" },
-  { code: "es", label: "Spanish", nativeLabel: "Español" },
-  { code: "fr", label: "French", nativeLabel: "Français" },
-  { code: "ar", label: "Arabic", nativeLabel: "العربية" },
-  { code: "pt", label: "Portuguese", nativeLabel: "Português" },
-  { code: "ja", label: "Japanese", nativeLabel: "日本語" },
-  { code: "hi", label: "Hindi", nativeLabel: "हिन्दी" },
-];
+
 
 const AppContext = createContext(null);
 

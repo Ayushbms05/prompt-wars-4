@@ -3,7 +3,7 @@ import { generateText } from "./geminiClient.js";
 /**
  * Generates AI-powered transport and sustainability tips.
  */
-export async function getTransportTips(gate, language = "English", accessibilityMode = false) {
+export async function getTransportTips(gate, language = "English", accessibilityMode = false, signal = undefined) {
   const accessibilityInstruction = accessibilityMode
     ? "IMPORTANT: Use very simple, short sentences. Target a 6th-grade reading level."
     : "Use clear, professional language.";
@@ -22,7 +22,7 @@ Generate exactly two short bullet points:
 
 Format the response as plain text with bullet points or emojis. Keep it extremely concise.
 - ${accessibilityInstruction}
-- ${languageInstruction}`;
+  - ${languageInstruction}`;
 
-  return await generateText(prompt);
+  return await generateText(prompt, signal);
 }

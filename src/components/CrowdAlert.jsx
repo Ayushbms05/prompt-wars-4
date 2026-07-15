@@ -12,7 +12,7 @@
  * - Auto-highlights critical zones (>80%)
  */
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useAppContext } from "../context/AppContext.jsx";
 import { generateCrowdAlert } from "../services/crowdAlertService.js";
 import { mockOccupancy } from "../data/mockOccupancy.js";
@@ -45,6 +45,15 @@ export default function CrowdAlert() {
   const [alertText, setAlertText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [lastGenerated, setLastGenerated] = useState(null);
+  const abortController = React.useRef(null);
+
+  React.useEffect(() => {
+    return () => {
+      if (abortController.current) {
+        abortController.current.abort();
+      }
+    };
+  }, []);
 
   /**
    * Triggers the AI crowd alert generation.
@@ -54,6 +63,7 @@ export default function CrowdAlert() {
     if (isLoading) return;
     setIsLoading(true);
     setAlertText("");
+    abortController.current = new AbortController();
 
     try {
       /**
@@ -61,12 +71,12 @@ export default function CrowdAlert() {
        * The service builds a prompt with all zone data and stadium map,
        * asking Gemini to identify critical zones and suggest alternate routes.
        */
-      const result = await generateCrowdAlert(language, accessibilityMode);
+      const result = await generateCrowdAlert(language, accessibilityMode, abortController.current.signal);
       setAlertText(result);
       setLastGenerated(new Date());
     } catch (unexpectedError) {
-      console.error("[CrowdAlert] Unexpected error:", unexpectedError);
-      setAlertText("⚠️ Failed to generate crowd alert. Please try again.");
+      if (unexpectedError.name === 'AbortError') return;
+      setAlertText("[Error] Failed to generate crowd alert. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -135,7 +145,7 @@ export default function CrowdAlert() {
         >
           {isLoading ? (
             <>
-              <span className="btn-spinner"></span>
+              <span className="btn-spinner"><span className="sr-only">AI is responding...</span></span>
               Analyzing zones...
             </>
           ) : (

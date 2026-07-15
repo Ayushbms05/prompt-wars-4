@@ -20,9 +20,10 @@ import { getStadiumMapContext } from "../data/stadiumMap.js";
  * 
  * @param {string} language - Target language for the response
  * @param {boolean} accessibilityMode - If true, generates simpler sentences
+ * @param {AbortSignal} [signal] - Optional abort signal
  * @returns {Promise<string>} AI-generated crowd alert or error message
  */
-export async function generateCrowdAlert(language = "English", accessibilityMode = false) {
+export async function generateCrowdAlert(language = "English", accessibilityMode = false, signal = undefined) {
   const accessibilityInstruction = accessibilityMode
     ? "IMPORTANT: Use very simple, short sentences. Avoid technical terms. Use bullet points. Target a 6th-grade reading level."
     : "Use clear, professional language suitable for stadium staff and volunteers.";
@@ -50,5 +51,5 @@ INSTRUCTIONS:
 - ${accessibilityInstruction}
 - ${languageInstruction}`;
 
-  return await generateText(prompt);
+  return await generateText(prompt, signal);
 }

@@ -11,14 +11,15 @@
  * Applies accessibility-mode class to root when toggled.
  */
 
-import { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { AppProvider, useAppContext } from "./context/AppContext.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import Header from "./components/Header.jsx";
-import NavigationChat from "./components/NavigationChat.jsx";
-import CrowdAlert from "./components/CrowdAlert.jsx";
-import OrganizerDashboard from "./components/OrganizerDashboard.jsx";
 import "./App.css";
+
+const NavigationChat = React.lazy(() => import("./components/NavigationChat.jsx"));
+const CrowdAlert = React.lazy(() => import("./components/CrowdAlert.jsx"));
+const OrganizerDashboard = React.lazy(() => import("./components/OrganizerDashboard.jsx"));
 
 /**
  * Inner app component that has access to AppContext.
@@ -52,7 +53,9 @@ function AppContent() {
       <main className="app-main">
         <div className="main-content">
           <div className="tab-content" key={activeTab}>
-            {renderTabContent()}
+            <Suspense fallback={<div className="loading-fallback">Loading feature...</div>}>
+              {renderTabContent()}
+            </Suspense>
           </div>
         </div>
       </main>
