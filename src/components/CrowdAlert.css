@@ -1,0 +1,233 @@
+/* CrowdAlert.css — Crowd monitoring and alert UI */
+
+.crowd-alert {
+  padding: 1.25rem 1.5rem;
+  overflow-y: auto;
+  max-height: calc(100vh - 180px);
+}
+
+.crowd-alert-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+}
+
+.crowd-alert-header h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 0.25rem;
+}
+
+.crowd-alert-header p {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.critical-badge {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  white-space: nowrap;
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(220, 53, 69, 0); }
+}
+
+/* Occupancy grid */
+.occupancy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.occupancy-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  transition: all 0.25s;
+}
+
+.occupancy-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.occupancy-critical {
+  border-color: rgba(220, 53, 69, 0.4);
+  background: linear-gradient(135deg, rgba(220, 53, 69, 0.08), var(--surface-card));
+}
+
+.occupancy-warning {
+  border-color: rgba(255, 193, 7, 0.3);
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.06), var(--surface-card));
+}
+
+.occupancy-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.occupancy-zone-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.occupancy-trend {
+  font-size: 0.9rem;
+}
+
+.occupancy-bar-container {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.4rem;
+}
+
+.occupancy-bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1s ease-out;
+}
+
+.occupancy-bar-normal {
+  background: linear-gradient(90deg, var(--accent-green), #34d058);
+}
+
+.occupancy-bar-moderate {
+  background: linear-gradient(90deg, #ffc107, #e0a800);
+}
+
+.occupancy-bar-warning {
+  background: linear-gradient(90deg, #fd7e14, #e36209);
+}
+
+.occupancy-bar-critical {
+  background: linear-gradient(90deg, #dc3545, #ff6b6b);
+  animation: criticalGlow 1.5s ease-in-out infinite;
+}
+
+@keyframes criticalGlow {
+  0%, 100% { box-shadow: 0 0 4px rgba(220, 53, 69, 0.3); }
+  50% { box-shadow: 0 0 12px rgba(220, 53, 69, 0.6); }
+}
+
+.occupancy-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.occupancy-percent {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.occupancy-count {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+/* Generate alert section */
+.alert-generate-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.generate-alert-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  padding: 0.75rem 1.5rem;
+}
+
+.btn-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(10, 22, 40, 0.3);
+  border-top-color: #0a1628;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.last-generated {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* AI-generated alert result */
+.alert-result {
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.alert-result-header {
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, rgba(212, 168, 67, 0.12), rgba(0, 166, 81, 0.08));
+  border-bottom: 1px solid var(--border);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent-gold);
+}
+
+.alert-result-content {
+  padding: 1rem 1.25rem;
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .crowd-alert {
+    padding: 1rem;
+  }
+
+  .occupancy-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .alert-generate-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

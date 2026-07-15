@@ -1,0 +1,209 @@
+/* Header.css — Styles for the top navigation bar */
+
+.header {
+  background: var(--surface-elevated);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* --- Branding --- */
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.header-logo {
+  font-size: 2rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 8px var(--accent-gold));
+  animation: logoPulse 3s ease-in-out infinite;
+}
+
+@keyframes logoPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+.header-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent-gold), var(--accent-green));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.header-subtitle {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-weight: 500;
+}
+
+/* --- Controls --- */
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.language-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.4rem 0.6rem;
+  transition: border-color 0.2s;
+}
+
+.language-selector:hover {
+  border-color: var(--accent-gold);
+}
+
+.language-icon {
+  font-size: 1.1rem;
+}
+
+.language-dropdown {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-family: var(--font-main);
+  cursor: pointer;
+  outline: none;
+  padding-right: 0.25rem;
+}
+
+.language-dropdown option {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.accessibility-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.4rem 0.7rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font-main);
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.accessibility-toggle:hover {
+  border-color: var(--accent-blue);
+}
+
+.accessibility-toggle.active {
+  background: var(--accent-blue);
+  border-color: var(--accent-blue);
+  color: #fff;
+}
+
+.accessibility-icon {
+  font-size: 1.1rem;
+}
+
+/* --- Tabs --- */
+.header-tabs {
+  display: flex;
+  gap: 0;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--text-muted);
+  font-family: var(--font-main);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.tab:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tab-active {
+  color: var(--accent-gold);
+  border-bottom-color: var(--accent-gold);
+}
+
+.tab-icon {
+  font-size: 1.15rem;
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* --- Responsive --- */
+@media (max-width: 600px) {
+  .header-top {
+    padding: 0.75rem 1rem;
+  }
+
+  .header-title {
+    font-size: 1.15rem;
+  }
+
+  .header-subtitle {
+    display: none;
+  }
+
+  .accessibility-label {
+    display: none;
+  }
+
+  .tab {
+    font-size: 0.8rem;
+    padding: 0.6rem 0.5rem;
+    gap: 0.3rem;
+  }
+}

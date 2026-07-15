@@ -1,0 +1,52 @@
+.transport-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.transport-card-header h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.transport-card-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.transport-gate-select {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 0.5rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-main);
+  flex: 1;
+  min-width: 120px;
+}
+
+.transport-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.transport-tips-result {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(0, 166, 81, 0.1);
+  border-left: 3px solid var(--accent-green);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.accessibility-mode .transport-tips-result {
+  font-size: 1.05rem;
+}
